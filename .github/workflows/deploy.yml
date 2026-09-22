@@ -2,7 +2,8 @@ name: Deploy CAMPAR to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -16,13 +17,14 @@ concurrency:
 
 jobs:
   build:
+    name: Build CAMPAR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -30,26 +32,27 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-- name: Build CAMPAR
-  run: npm run build -- --base=/SICE_CAMPAR/
+      - name: Build CAMPAR
+        run: npm run build -- --base=/SICE_CAMPAR/
 
-      - name: Setup Pages
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload CAMPAR
+      - name: Upload production build
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
   deploy:
+    name: Deploy CAMPAR
+    runs-on: ubuntu-latest
+    needs: build
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: ubuntu-latest
-    needs: build
-
     steps:
-      - name: Deploy CAMPAR
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
